@@ -38,7 +38,7 @@
         .side-panel h4 { font-size: 0.85rem; color: #27ae60; margin-bottom: 6px; }
         .panel-list { list-style: none; max-height: 120px; overflow-y: auto; margin-top: 6px; padding: 0; }
         .panel-item { background: #fff; border: 1px solid #2ecc71; padding: 6px 8px; border-radius: 4px; font-size: 0.8rem; margin-bottom: 4px; position: relative; font-weight: bold; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: background 0.2s; }
-        .panel-item:hover { background: #ffebee; border-color: #e74c3c; } /* Silme uyarısı şık görsel etki */
+        .panel-item:hover { background: #ffebee; border-color: #e74c3c; }
         .online-dot { color: #27ae60; font-size: 0.75rem; }
 
         /* Ödev Paneli */
@@ -80,7 +80,7 @@
 
         .btn-close-loop { background: #e74c3c; color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 0.75rem; font-weight: bold; cursor: pointer; display: none; }
 
-        /* Canlı Sohbet Kutusu Alanı ve Kilit Durumu */
+        /* Canlı Sohbet Kutusu */
         .chat-container { background: #2c3e50; color: #fff; border-top: 3px solid #34495e; padding: 12px 20px; display: flex; flex-direction: column; gap: 8px; }
         .chat-box { background: #1a252f; border-radius: 6px; padding: 8px; height: 90px; overflow-y: auto; font-size: 0.85rem; display: flex; flex-direction: column; gap: 4px; border: 1px solid #455a64; }
         .chat-msg { background: #34495e; padding: 4px 8px; border-radius: 4px; width: fit-content; max-width: 90%; word-break: break-word; }
@@ -131,7 +131,7 @@
                         <div id="lblRole">Oyun Modu: Misafir</div>
                     </div>
 
-                    <!-- Öğrencilerim Paneli (Öğretmen/Creative) -->
+                    <!-- Öğrencilerim Paneli -->
                     <div id="studentsPanel" class="side-panel" style="display:none;">
                         <h4>👨‍🏫 Öğrencilerim <span style="font-size:0.7rem; color:#888;">(Silmek için tıkladığınızda sorar)</span></h4>
                         <div style="display:flex; gap:4px;">
@@ -208,13 +208,11 @@
         <div class="chat-container">
             <div style="font-weight:bold; font-size:0.85rem; color:#f39c12; display:flex; justify-content:space-between; align-items:center;">
                 <span>💬 Canlı Sohbet & Arkadaş Mesajları</span>
-                <span id="chatStatusText" class="chat-disabled-notice">🔒 Canlı Sohbet için en az 1 arkadaş eklemelisiniz!</span>
+                <span id="chatStatusText" class="chat-disabled-notice">🔒 Canlı Sohbet Kapalı</span>
             </div>
-            <div class="chat-box" id="chatBox">
-                <div class="chat-msg"><span class="sender">Sistem:</span> Arkadaşlar kilitlidir. Sohbet etmek için en az 1 arkadaş ekleyin!</div>
-            </div>
+            <div class="chat-box" id="chatBox"></div>
             <div class="chat-input-row">
-                <input type="text" id="txtChatMessage" placeholder="Canlı sohbet kapalı (Önce arkadaş ekleyin)..." disabled>
+                <input type="text" id="txtChatMessage" placeholder="Canlı sohbet kapalı..." disabled>
                 <button id="btnSendChat" onclick="sendChatMessage()" disabled style="opacity:0.5; cursor:not-allowed;">Gönder 📩</button>
             </div>
         </div>
@@ -257,7 +255,6 @@
             renderStudentsList();
             renderFriendsList();
             checkStudentHomework();
-            loadChatMessages();
 
             document.getElementById('studentBtn').addEventListener('click', loginStudent);
             document.getElementById('teacherBtn').addEventListener('click', loginTeacher);
@@ -290,7 +287,7 @@
             }
         }
 
-        /* ARKADAŞ EKLEME & SİLME SİSTEMİ */
+        /* ARKADAŞ EKLEME SİSTEMİ */
         function addFriend() {
             const input = document.getElementById('txtAddFriend');
             const friendName = input.value.trim();
@@ -355,42 +352,44 @@
                 });
             }
 
-            // DİNAMİK CANLI SOHBET KONTROLÜ (En az 1 arkadaş var mı?)
             updateChatAccess(friends.length > 0);
         }
 
-        /* CANLI SOHBET AÇMA / KAPAMA KONTROLÜ */
+        /* SOHBET KONTROLÜ VE İSTEDİĞİN ÖZEL METİNLER */
         function updateChatAccess(hasFriends) {
             const txtInput = document.getElementById('txtChatMessage');
             const btnSend = document.getElementById('btnSendChat');
             const statusText = document.getElementById('chatStatusText');
+            const chatBox = document.getElementById('chatBox');
 
             if (hasFriends) {
                 txtInput.disabled = false;
-                txtInput.placeholder = "Mesajınızı yazın... (Güvenlik filtresi aktif)";
+                txtInput.placeholder = "Mesajınızı yazın...";
                 btnSend.disabled = false;
                 btnSend.style.opacity = '1';
                 btnSend.style.cursor = 'pointer';
                 statusText.innerText = "🟢 Canlı Sohbet Aktif";
                 statusText.style.color = "#2ecc71";
+
+                loadChatMessages();
             } else {
                 txtInput.disabled = true;
-                txtInput.placeholder = "Canlı sohbet kapalı (Önce arkadaş ekleyin)...";
+                txtInput.placeholder = "Canlı sohbet kapalı...";
                 btnSend.disabled = true;
                 btnSend.style.opacity = '0.5';
                 btnSend.style.cursor = 'not-allowed';
-                statusText.innerText = "🔒 Canlı Sohbet için en az 1 arkadaş eklemelisiniz!";
+                statusText.innerText = "🔒 Canlı Sohbet Kapalı";
                 statusText.style.color = "#e74c3c";
+
+                // TAM İSTEDİĞİN CÜMLE:
+                chatBox.innerHTML = '<div class="chat-msg"><span class="sender">Sistem:</span> Şu anda arkadaşınız olmadığı için sohbet edemezsiniz.</div>';
             }
         }
 
-        /* SOHBET & MESAJLAŞMA */
+        /* SOHBET VE MESAJLAR */
         function sendChatMessage() {
             let friends = JSON.parse(localStorage.getItem('myFriendsList') || '[]');
-            if (friends.length === 0) {
-                alert("Canlı sohbeti kullanabilmek için en az 1 arkadaşınız olmalıdır!");
-                return;
-            }
+            if (friends.length === 0) return;
 
             const input = document.getElementById('txtChatMessage');
             const msgText = input.value.trim();
@@ -416,10 +415,14 @@
         }
 
         function loadChatMessages() {
+            let friends = JSON.parse(localStorage.getItem('myFriendsList') || '[]');
+            if (friends.length === 0) return;
+
             const chatBox = document.getElementById('chatBox');
             let chatHistory = JSON.parse(localStorage.getItem('globalGameChatLogs') || '[]');
 
-            chatBox.innerHTML = '<div class="chat-msg"><span class="sender">Sistem:</span> Arkadaşlar bağlandı. Sohbet edebilirsiniz!</div>';
+            // TAM İSTEDİĞİN CÜMLE:
+            chatBox.innerHTML = '<div class="chat-msg"><span class="sender">Sistem:</span> Arkadaşlar bağlandı, sohbet edebilirsiniz.</div>';
             
             chatHistory.forEach(m => {
                 const div = document.createElement('div');
@@ -604,7 +607,6 @@
             }
         }
 
-        /* ÖĞRETMEN TARAFINDAN ÖĞRENCİ EKLEME VE SİLME */
         function addStudentByTeacher() {
             const role = localStorage.getItem('userRole');
             if (role !== 'teacher' && role !== 'creative') return;
@@ -641,9 +643,7 @@
             }
         }
 
-        /* ÖĞRENCİ SİLME */
         function removeStudent(studentName, event) {
-            // Eğer 3 nokta menüsüne tıklandıysa silme işlemini tetikleme
             if (event && event.target.classList.contains('three-dots-btn')) return;
 
             if (confirm(`"${studentName}" adlı öğrenciyi listeden silmek istediğinize emin misiniz?`)) {
